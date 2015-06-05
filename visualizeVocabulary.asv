@@ -4,6 +4,7 @@ framesDirectory = '../frames';
 siftDirectory = '../sift';
 
 fileStructs = dir([siftDirectory '/*.mat']); %struct
+jpegStructs = dir([framesDirectory '/*jpeg']);
 % fprintf('reading %d total files...\n', length(fileStructs));
 % 
 % myDescriptors = [];
@@ -36,14 +37,41 @@ fileStructs = dir([siftDirectory '/*.mat']); %struct
 %    [idx, C] = kmeansML(k,myDescriptors');
 %    C = C';
 load('myVariables.mat')
-counter = 0
+
+counter = 0;
+word = 489;
+quitV = 0;
+figure;
+
 for i=1:length(fileStructs)
     load(fileStructs(i).name)
     numDescriptors = size(descriptors,1);
-    for j=1:numDescriptors
-        distanceMatrix = dist2(descriptors(j), C);
-        min(distanceMatrix)
+    for j=1:numDescriptors %goes through each descriptor in selected Image
+        closestClusterMatrix = dist2(descriptors(j,:), C); %find the closest cluster or "word" it belongs to
+        [M,currentWord] = min(closestClusterMatrix);
+        if(currentWord == word )
+            counter = counter + 1;
+            imPath = strcat('../frames/',jpegStructs(i).name);
+            im = imread(imPath);
+            im = rgb2gray(im);
+            myPatch = getPatchFromSIFTParameters(positions(j,:), scales(j,:), orients(j,:), im);
+            
+            subplot(5,5,counter);
+            imshow(myPatch);
+            
+            if(counter == 25)
+                quitV = 1;
+                break
+            end
+            
+        end
         
+        
+        
+        
+    end
+    if quitV == 1
+        break;
     end
 end
 
