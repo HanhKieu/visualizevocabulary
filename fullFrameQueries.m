@@ -1,4 +1,4 @@
-ABOW = []; %ALL BAG OF WORDS
+abow = []; %ALL BAG OF WORDS
 
 addpath(genpath('../'));
 
@@ -36,7 +36,7 @@ end
 
    
 
-chosenImage = 206; %the frame query
+chosenImage = 40; %the frame query
 
 mybag = abow(chosenImage,:);
 
@@ -49,22 +49,30 @@ for j=1:size(abow,1) %for each image compare bag of words
   
   
     bagImComparingTo = abow(j,:);
-    currDist = dot(mybag,bagImComparingTo)/sqrt(dot(mybag,mybag) * dot(bagImComparingTo,bagImComparingTo));
+    T = mybag;
+    Q = bagImComparingTo;
+    currDist = dot(T,Q)/sqrt(dot(T,T) * dot(Q,Q));
     distColVector(j,1) = currDist;
     distColVector(j,2) = j;
     
    
 end
 
-bestFramesMatrix = sortrows(distColVector); %sorts rows from descending order (in this case good for us)
+bestFramesMatrix = sortrows(distColVector, -1); %sorts rows from descending order (in this case good for us)
 %top 5 of this distColVector is our top 5 distances and also image
 %indexes.image indexes located at distColvector(:,2) remember that!
 
-fileName = [siftDirectory '/' fileStructs( bestFramesMatrix(chosenImage,2) ).name];
+
+nanRows = find( isnan(bestFramesMatrix) );
+bestFramesMatrix(nanRows, :) = [];
+
+fileName = [siftDirectory '/' fileStructs( chosenImage ).name];
 load(fileName);
 myImage  = imread( [framesDirectory '/' imname] );
 subplot(2,3,1)
 imshow(myImage)
+
+
 for i = 2:6
     fileName = [siftDirectory '/' fileStructs( bestFramesMatrix(i,2) ).name];
     load(fileName);
